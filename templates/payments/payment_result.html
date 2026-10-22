@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Payment Result - SmartPrint Kiosk{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card kiosk-card p-4 p-md-5 text-center">
+
+                {% if payment.status == 'SUCCESS' %}
+                <div class="text-success mb-3">
+                    <i class="bi bi-check-circle-fill display-1"></i>
+                </div>
+                <h2 class="fw-bold text-success mb-2">Payment Authorized Successfully</h2>
+                <p class="text-muted mb-4">Your demo payment has been verified by the server. The print job has been queued.</p>
+                {% else %}
+                <div class="text-danger mb-3">
+                    <i class="bi bi-x-circle-fill display-1"></i>
+                </div>
+                <h2 class="fw-bold text-danger mb-2">Demo Payment Failed / Declined</h2>
+                <p class="text-muted mb-4">
+                    The simulated payment was declined by the bank simulator.
+                    {% if payment.error_message %}<br><span class="text-dark fw-semibold">{{ payment.error_message }}</span>{% endif %}
+                </p>
+                {% endif %}
+
+                <!-- Transaction Receipt Box -->
+                <div class="p-3 bg-light rounded-3 text-start mb-4">
+                    <h6 class="fw-bold text-secondary border-bottom pb-2 mb-3">Transaction Details</h6>
+                    <div class="row g-2 small">
+                        <div class="col-sm-6 text-muted">Transaction ID:</div>
+                        <div class="col-sm-6 text-sm-end fw-bold font-monospace">{{ payment.transaction_id }}</div>
+
+                        <div class="col-sm-6 text-muted">Order Reference:</div>
+                        <div class="col-sm-6 text-sm-end fw-bold">{{ order.order_number }}</div>
+
+                        <div class="col-sm-6 text-muted">Amount:</div>
+                        <div class="col-sm-6 text-sm-end fw-bold">₹{{ payment.amount }}</div>
+
+                        <div class="col-sm-6 text-muted">Payment Mode:</div>
+                        <div class="col-sm-6 text-sm-end">{{ payment.get_payment_mode_display }}</div>
+
+                        <div class="col-sm-6 text-muted">Timestamp:</div>
+                        <div class="col-sm-6 text-sm-end">{{ payment.created_at|date:"M d, Y H:i" }}</div>
+
+                        <div class="col-sm-6 text-muted">Notice:</div>
+                        <div class="col-sm-6 text-sm-end text-muted fst-italic">{{ payment.demo_disclaimer }}</div>
+                    </div>
+                </div>
+
+                <!-- Navigation Action Buttons -->
+                <div class="d-flex justify-content-center gap-3">
+                    {% if payment.status == 'SUCCESS' %}
+                    <a href="{% url 'printing:order_confirmation' order_number=order.order_number %}" class="btn btn-primary btn-lg px-4">
+                        <i class="bi bi-file-earmark-check me-1"></i> View Order Confirmation
+                    </a>
+                    {% else %}
+                    <a href="{% url 'payments:checkout' order_number=order.order_number %}" class="btn btn-warning btn-lg px-4 fw-bold">
+                        <i class="bi bi-arrow-repeat me-1"></i> Retry Demo Payment
+                    </a>
+                    <a href="{% url 'printing:home' %}" class="btn btn-outline-secondary btn-lg px-4">
+                        Cancel Order
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

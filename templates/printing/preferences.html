@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Step 2: Print Preferences - SmartPrint Kiosk{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Step Wizard -->
+    <div class="step-wizard">
+        <div class="step-item completed">
+            <div class="step-circle"><i class="bi bi-check-lg"></i></div>
+            <div class="step-label">Upload Document</div>
+        </div>
+        <div class="step-item active">
+            <div class="step-circle">2</div>
+            <div class="step-label">Print Preferences</div>
+        </div>
+        <div class="step-item">
+            <div class="step-circle">3</div>
+            <div class="step-label">Order Summary</div>
+        </div>
+        <div class="step-item">
+            <div class="step-circle">4</div>
+            <div class="step-label">Demo Payment</div>
+        </div>
+    </div>
+
+    <!-- Document Info Bar -->
+    <div class="card kiosk-card mb-4 bg-white border-start border-4 border-primary">
+        <div class="card-body p-3">
+            <div class="row align-items-center">
+                <div class="col-md-7 d-flex align-items-center">
+                    {% if doc.file_type == 'PDF' %}
+                    <i class="bi bi-file-earmark-pdf-fill text-danger fs-2 me-3"></i>
+                    {% elif doc.file_type == 'DOCX' or doc.file_type == 'DOC' %}
+                    <i class="bi bi-file-earmark-word-fill text-primary fs-2 me-3"></i>
+                    {% else %}
+                    <i class="bi bi-file-earmark-image-fill text-success fs-2 me-3"></i>
+                    {% endif %}
+                    <div>
+                        <h5 class="fw-bold mb-0 text-truncate" style="max-width: 380px;">{{ doc.original_filename }}</h5>
+                        <span class="text-muted small">Format: {{ doc.get_file_type_display }} &bull; Size: {{ doc.formatted_file_size }}</span>
+                    </div>
+                </div>
+                <div class="col-md-5 text-md-end mt-2 mt-md-0">
+                    <span class="badge bg-primary fs-6 px-3 py-2">
+                        <i class="bi bi-files me-1"></i> Detected Pages: <strong>{{ doc.page_count }}</strong>
+                    </span>
+                    <a href="{% url 'printing:upload' %}" class="btn btn-outline-secondary btn-sm ms-2" title="Change file">
+                        <i class="bi bi-arrow-repeat"></i> Change
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Print Options Configuration Form -->
+        <div class="col-lg-7">
+            <div class="card kiosk-card p-4 p-md-4">
+                <h4 class="fw-bold mb-4 text-dark">
+                    <i class="bi bi-sliders text-primary me-2"></i> Configure Print Settings
+                </h4>
+
+                <div id="priceErrorAlert" class="alert alert-danger d-none" role="alert"></div>
+
+                <form method="post" id="printPreferencesForm" data-upload-token="{{ doc.upload_token }}" novalidate>
+                    {% csrf_token %}
+
+                    <!-- 1. Color Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold d-block">1. Color Mode</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input type="radio" class="btn-check" name="color_mode" id="color_bw" value="BW" {% if form.color_mode.value == 'BW' or not form.color_mode.value %}checked{% endif %}>
+                                <label class="btn btn-outline-primary w-100 p-3 text-start" for="color_bw">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div class="fw-bold fs-6"><i class="bi bi-circle-half me-1"></i> Black & White</div>
+                                            <small class="text-muted">Standard monochrome</small>
+                                        </div>
+                                        <span class="badge bg-secondary">₹{{ pricing.bw_rate_per_page }}/p</span>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <input type="radio" class="btn-check" name="color_mode" id="color_full" value="COLOR" {% if form.color_mode.value == 'COLOR' %}checked{% endif %}>
+                                <label class="btn btn-outline-primary w-100 p-3 text-start" for="color_full">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div class="fw-bold fs-6"><i class="bi bi-palette-fill me-1 text-danger"></i> Colour Print</div>
+                                            <small class="text-muted">Full color laser</small>
+                                        </div>
+                                        <span class="badge bg-success">₹{{ pricing.color_rate_per_page }}/p</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Number of Copies -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold d-block" for="copiesInput">2. Number of Copies</label>
+                        <div class="row align-items-center">
+                            <div class="col-sm-5">
+                                <div class="input-group">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="decrementCopies()">
+                                        <i class="bi bi-dash-lg"></i>
+                                    </button>
+                                    <input type="number" name="copies" id="copiesInput" class="form-control text-center fs-5 fw-bold" value="{{ form.copies.value|default:1 }}" min="1" max="{{ pricing.max_copies_limit }}">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="incrementCopies()">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-sm-7 mt-2 mt-sm-0">
+                                <span class="text-muted small">Max allowed copies per order: {{ pricing.max_copies_limit }}</span>
+                            </div>
+                        </div>
+                        {% if form.copies.errors %}
+                        <div class="text-danger small mt-1">{{ form.copies.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- 3. Page Range Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold d-block">3. Pages to Print</label>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="page_selection_mode" id="page_mode_all" value="ALL" {% if form.page_selection_mode.value == 'ALL' or not form.page_selection_mode.value %}checked{% endif %}>
+                            <label class="form-check-label fw-semibold" for="page_mode_all">
+                                All Pages <span class="text-muted fw-normal">(Pages 1 to {{ doc.page_count }})</span>
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="page_selection_mode" id="page_mode_custom" value="CUSTOM" {% if form.page_selection_mode.value == 'CUSTOM' %}checked{% endif %}>
+                            <label class="form-check-label fw-semibold" for="page_mode_custom">
+                                Custom Page Range
+                            </label>
+                        </div>
+
+                        <!-- Custom Range Input Container -->
+                        <div id="customRangeWrapper" class="mt-2 ps-4" style="display: none;">
+                            <label class="form-label small text-muted">Enter specific pages and ranges separated by commas:</label>
+                            <input type="text" name="custom_page_range" id="customRangeInput" class="form-control" placeholder="e.g. 1-3, 5, 8" value="{{ form.custom_page_range.value|default:'' }}">
+                            <div class="form-text small">Example: <code>1-3, 5</code> prints pages 1, 2, 3, and 5. Must not exceed total page count ({{ doc.page_count }}).</div>
+                            {% if form.custom_page_range.errors %}
+                            <div class="text-danger small mt-1">{{ form.custom_page_range.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 4. Duplex (Single-sided vs Double-sided) -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold d-block">4. Print Sides</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input type="radio" class="btn-check" name="duplex_mode" id="duplex_single" value="SINGLE" {% if form.duplex_mode.value == 'SINGLE' or not form.duplex_mode.value %}checked{% endif %}>
+                                <label class="btn btn-outline-secondary w-100 p-2 text-start" for="duplex_single">
+                                    <div class="fw-bold small"><i class="bi bi-file-earmark me-1"></i> Single-Sided</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">One side per sheet</div>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <input type="radio" class="btn-check" name="duplex_mode" id="duplex_double" value="DOUBLE" {% if form.duplex_mode.value == 'DOUBLE' %}checked{% endif %}>
+                                <label class="btn btn-outline-secondary w-100 p-2 text-start" for="duplex_double">
+                                    <div class="fw-bold small"><i class="bi bi-book-half me-1"></i> Double-Sided</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Duplex on both sides</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Orientation -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold d-block">5. Paper Orientation</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input type="radio" class="btn-check" name="orientation" id="orient_p" value="PORTRAIT" {% if form.orientation.value == 'PORTRAIT' or not form.orientation.value %}checked{% endif %}>
+                                <label class="btn btn-outline-secondary w-100 p-2 text-start" for="orient_p">
+                                    <div class="fw-bold small"><i class="bi bi-phone me-1"></i> Portrait</div>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <input type="radio" class="btn-check" name="orientation" id="orient_l" value="LANDSCAPE" {% if form.orientation.value == 'LANDSCAPE' %}checked{% endif %}>
+                                <label class="btn btn-outline-secondary w-100 p-2 text-start" for="orient_l">
+                                    <div class="fw-bold small"><i class="bi bi-phone-landscape me-1"></i> Landscape</div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 pt-3">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold shadow">
+                            Proceed to Review Summary <i class="bi bi-arrow-right-circle ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sticky Live Price Estimation Panel -->
+        <div class="col-lg-5">
+            <div class="card kiosk-card p-4 position-sticky" style="top: 85px;">
+                <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                    <h5 class="fw-bold mb-0">Live Price Estimate</h5>
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">Server-Calculated</span>
+                </div>
+
+                <!-- Big Price Box -->
+                <div class="price-display-box mb-4 shadow-sm">
+                    <div class="small text-uppercase text-white-50 fw-semibold">Estimated Total Cost</div>
+                    <div class="price-big" id="displayTotalAmount">₹{{ initial_price.total_amount }}</div>
+                    <div class="small text-white-50">Inclusive of all print kiosk charges</div>
+                </div>
+
+                <!-- Price Calculation Breakdown Table -->
+                <table class="table table-sm small align-middle mb-3">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted">Per Page Rate:</td>
+                            <td class="text-end fw-bold" id="displayRatePerPage">₹{{ initial_price.rate_per_page }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Pages per Copy:</td>
+                            <td class="text-end fw-bold" id="displayPagesPerCopy">{{ initial_price.pages_per_copy }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Total Sides Printed:</td>
+                            <td class="text-end fw-bold" id="displayTotalPrinted">{{ initial_price.total_pages_printed }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Physical Paper Sheets:</td>
+                            <td class="text-end fw-bold" id="displaySheetsUsed">{{ initial_price.total_sheets }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Subtotal:</td>
+                            <td class="text-end" id="displaySubtotal">₹{{ initial_price.subtotal }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Duplex Savings:</td>
+                            <td class="text-end text-success fw-bold" id="displayDiscount">-₹{{ initial_price.discount }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="p-3 bg-light rounded small text-muted">
+                    <i class="bi bi-lightbulb-fill text-warning me-1"></i> Changing print options above immediately recalculates the verified server estimate in real time.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function incrementCopies() {
+    const input = document.getElementById('copiesInput');
+    const max = parseInt(input.getAttribute('max')) || 50;
+    let val = parseInt(input.value) || 1;
+    if (val < max) {
+        input.value = val + 1;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+}
+function decrementCopies() {
+    const input = document.getElementById('copiesInput');
+    let val = parseInt(input.value) || 1;
+    if (val > 1) {
+        input.value = val - 1;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,56 @@
+<footer class="bg-dark text-white py-4 mt-5 border-top">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-5">
+                <h5 class="fw-bold text-warning mb-2">
+                    <i class="bi bi-printer-fill me-1"></i> SmartPrint Kiosk
+                </h5>
+                <p class="text-white-50 small mb-2">
+                    Automated QR-based self-service document printing system. Upload your documents from your phone, configure print options, make demo payments, and collect your prints at the counter instantly.
+                </p>
+                <div class="badge bg-secondary text-light p-2">
+                    <i class="bi bi-mortarboard-fill me-1"></i> College Mini-Project Prototype
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <h6 class="text-uppercase fw-bold text-light mb-3">Quick Links</h6>
+                <ul class="list-unstyled small mb-0">
+                    <li class="mb-1"><a href="{% url 'printing:home' %}" class="text-white-50 text-decoration-none hover-white">Home</a></li>
+                    <li class="mb-1"><a href="{% url 'printing:upload' %}" class="text-white-50 text-decoration-none hover-white">Print New Document</a></li>
+                    <li class="mb-1"><a href="{% url 'printing:track_order' %}" class="text-white-50 text-decoration-none hover-white">Track Order Status</a></li>
+                    <li class="mb-1"><a href="{% url 'accounts:staff_login' %}" class="text-white-50 text-decoration-none hover-white">Shop Staff Login</a></li>
+                </ul>
+            </div>
+
+            <div class="col-md-4">
+                <h6 class="text-uppercase fw-bold text-light mb-3">Current Print Counter</h6>
+                <p class="text-white-50 small mb-1">
+                    <i class="bi bi-shop text-warning me-2"></i>{{ current_shop.name }}
+                </p>
+                <p class="text-white-50 small mb-1">
+                    <i class="bi bi-geo-alt text-warning me-2"></i>{{ current_shop.address }}
+                </p>
+                <p class="text-white-50 small mb-1">
+                    <i class="bi bi-telephone text-warning me-2"></i>{{ current_shop.contact_number }}
+                </p>
+                {% if current_pricing %}
+                <div class="mt-2 pt-2 border-top border-secondary text-white-50 small">
+                    Standard Rates: <strong>B&W ₹{{ current_pricing.bw_rate_per_page }}</strong> | <strong>Colour ₹{{ current_pricing.color_rate_per_page }}</strong>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <hr class="border-secondary my-3">
+
+        <div class="row align-items-center small text-white-50">
+            <div class="col-md-6 text-center text-md-start">
+                &copy; {% now "Y" %} SmartPrint Kiosk System. All rights reserved.
+            </div>
+            <div class="col-md-6 text-center text-md-end">
+                <span class="badge bg-warning text-dark">Simulation Mode Enabled</span>
+            </div>
+        </div>
+    </div>
+</footer>

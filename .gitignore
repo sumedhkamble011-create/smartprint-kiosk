@@ -1,0 +1,47 @@
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Virtual Environment
+.venv/
+env/
+venv/
+ENV/
+
+# Environment files
+.env
+
+# Database (local SQLite file if used during testing)
+*.sqlite3
+db.sqlite3-journal
+
+# Media uploads (user uploaded docs & generated QR codes)
+media/uploads/*
+!media/uploads/.gitkeep
+media/qrcodes/*
+!media/qrcodes/.gitkeep
+
+# Static collected files
+staticfiles/
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.env
+db.sqlite3
+media/
+staticfiles/

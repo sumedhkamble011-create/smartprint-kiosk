@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Order #{{ order.order_number }} - SmartPrint Kiosk{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <div class="d-flex align-items-center">
+                <a href="{% url 'dashboard:order_list' %}" class="btn btn-outline-secondary btn-sm me-3">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                <h2 class="fw-bold mb-0">Order #{{ order.order_number }}</h2>
+            </div>
+            <span class="text-muted small">Placed on {{ order.created_at|date:"M d, Y H:i:s" }}</span>
+        </div>
+        <div>
+            <span class="badge fs-5 px-3 py-2 badge-status-{{ order.order_status|lower }}">
+                {{ order.get_order_status_display }}
+            </span>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Column: Order Information & Document Details -->
+        <div class="col-lg-8">
+            <!-- Document & Preferences Card -->
+            <div class="card kiosk-card p-4 mb-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-file-earmark-text text-primary me-2"></i>Document & Preferences</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <span class="text-muted small d-block">Original Document:</span>
+                            <strong class="fs-6">{{ doc.original_filename }}</strong>
+                            <div class="small text-muted mt-1">
+                                Format: {{ doc.get_file_type_display }} &bull; Size: {{ doc.formatted_file_size }}
+                            </div>
+                            <div class="mt-2">
+                                <span class="badge bg-secondary">Total Pages: {{ doc.page_count }}</span>
+                                <span class="badge bg-light text-dark border ms-1">{{ doc.get_page_count_status_display }}</span>
+                            </div>
+                            <div class="mt-3">
+                                <a href="{% url 'printing:download_document' order_number=order.order_number %}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                    <i class="bi bi-download me-1"></i> Download File
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3">
+                            <span class="text-muted small d-block">Selected Print Preferences:</span>
+                            <ul class="list-unstyled mb-0 small mt-1">
+                                <li class="mb-1"><strong>Color Mode:</strong> {{ order.get_color_mode_display }}</li>
+                                <li class="mb-1"><strong>Copies:</strong> {{ order.copies }} copy/copies</li>
+                                <li class="mb-1"><strong>Page Range:</strong> {% if order.page_selection_mode == 'CUSTOM' %}{{ order.custom_page_range }}{% else %}All Pages{% endif %}</li>
+                                <li class="mb-1"><strong>Duplex (Sides):</strong> {{ order.get_duplex_mode_display }}</li>
+                                <li class="mb-1"><strong>Orientation:</strong> {{ order.get_orientation_display }}</li>
+                                <li class="mb-0"><strong>Paper Size:</strong> {{ order.paper_size }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Price Breakdown Table -->
+            <div class="card kiosk-card p-4 mb-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-currency-rupee text-success me-2"></i>Financial & Pricing Audit</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0 small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Item Description</th>
+                                <th class="text-center">Pages / Copy</th>
+                                <th class="text-center">Copies</th>
+                                <th class="text-center">Total Printed Sides</th>
+                                <th class="text-end">Applied Rate</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ order.get_color_mode_display }} Printing</td>
+                                <td class="text-center">{{ order.calculated_pages_per_copy }}</td>
+                                <td class="text-center">{{ order.copies }}</td>
+                                <td class="text-center">{{ order.total_pages_printed }}</td>
+                                <td class="text-end">₹{{ order.rate_applied }}</td>
+                                <td class="text-end fw-semibold">₹{{ order.subtotal_amount }}</td>
+                            </tr>
+                            {% if order.discount_amount > 0 %}
+                            <tr class="table-success">
+                                <td colspan="5">Duplex Paper Discount:</td>
+                                <td class="text-end text-success fw-bold">-₹{{ order.discount_amount }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr class="table-light fs-6">
+                                <td colspan="5" class="text-end fw-bold">Grand Total Charged:</td>
+                                <td class="text-end fw-bold text-success">₹{{ order.total_amount }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Payment Ledger -->
+            <div class="card kiosk-card p-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-credit-card-2-front text-primary me-2"></i>Payment Transaction Record</h5>
+                {% if payment %}
+                <div class="row g-2 small">
+                    <div class="col-sm-4 text-muted">Transaction ID:</div>
+                    <div class="col-sm-8 fw-bold font-monospace">{{ payment.transaction_id }}</div>
+
+                    <div class="col-sm-4 text-muted">Amount Paid:</div>
+                    <div class="col-sm-8 fw-bold text-success">₹{{ payment.amount }}</div>
+
+                    <div class="col-sm-4 text-muted">Payment Mode:</div>
+                    <div class="col-sm-8">{{ payment.get_payment_mode_display }}</div>
+
+                    <div class="col-sm-4 text-muted">Payment Status:</div>
+                    <div class="col-sm-8">
+                        <span class="badge bg-{% if payment.status == 'SUCCESS' %}success{% else %}danger{% endif %}">
+                            {{ payment.get_status_display }}
+                        </span>
+                    </div>
+
+                    <div class="col-sm-4 text-muted">Verified Timestamp:</div>
+                    <div class="col-sm-8">{{ payment.verified_at|date:"M d, Y H:i:s"|default:"Not verified" }}</div>
+
+                    <div class="col-sm-4 text-muted">Gateway Response:</div>
+                    <div class="col-sm-8 font-monospace text-muted">{{ payment.gateway_response_code }}</div>
+                </div>
+                {% else %}
+                <div class="alert alert-warning small mb-0">
+                    <i class="bi bi-exclamation-circle me-1"></i> No payment transaction recorded yet for this order.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Column: Operator Status Actions & Print Queue Controls -->
+        <div class="col-lg-4">
+            <!-- Operator Actions Card -->
+            <div class="card kiosk-card p-4 mb-4 border-top border-4 border-primary">
+                <h5 class="fw-bold mb-3"><i class="bi bi-arrow-repeat text-primary me-2"></i>Operator Workflow Actions</h5>
+                <p class="small text-muted">Advance the print job state safely according to shop workflow rules.</p>
+
+                <div class="d-grid gap-2">
+                    <!-- Action: Start Processing -->
+                    {% if order.order_status == 'PAID' or order.order_status == 'QUEUED' %}
+                    <form method="post" action="{% url 'dashboard:update_status' order_number=order.order_number %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="new_status" value="PROCESSING">
+                        <button type="submit" class="btn btn-primary w-100 fw-bold">
+                            <i class="bi bi-play-circle me-1"></i> Start Printing (Processing)
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    <!-- Action: Mark Ready -->
+                    {% if order.order_status == 'PROCESSING' or order.order_status == 'QUEUED' %}
+                    <form method="post" action="{% url 'dashboard:update_status' order_number=order.order_number %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="new_status" value="READY">
+                        <button type="submit" class="btn btn-success w-100 fw-bold">
+                            <i class="bi bi-check2-circle me-1"></i> Mark Ready for Collection
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    <!-- Action: Mark Completed -->
+                    {% if order.order_status == 'READY' %}
+                    <form method="post" action="{% url 'dashboard:update_status' order_number=order.order_number %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="new_status" value="COMPLETED">
+                        <button type="submit" class="btn btn-dark w-100 fw-bold">
+                            <i class="bi bi-bag-check me-1"></i> Mark Completed / Handed Over
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    <!-- Action: Mark Failed / Hardware Error -->
+                    {% if order.order_status == 'PROCESSING' %}
+                    <form method="post" action="{% url 'dashboard:update_status' order_number=order.order_number %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="new_status" value="FAILED">
+                        <button type="submit" class="btn btn-outline-danger w-100 btn-sm">
+                            <i class="bi bi-x-octagon me-1"></i> Mark Print Failed
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    <!-- Action: Retry Failed Job -->
+                    {% if order.order_status == 'FAILED' %}
+                    <form method="post" action="{% url 'dashboard:update_status' order_number=order.order_number %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="new_status" value="QUEUED">
+                        <button type="submit" class="btn btn-warning w-100 fw-bold">
+                            <i class="bi bi-arrow-clockwise me-1"></i> Re-Queue / Retry Job
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    <!-- Action: Cancel Order -->
+                    {% if order.order_status != 'COMPLETED' and order.order_status != 'CANCELLED' %}
+                    <form method="post" action="{% url 'dashboard:update_status' order_number=order.order_number %}" onsubmit="return confirm('Are you sure you want to cancel this order?');">
+                        {% csrf_token %}
+                        <input type="hidden" name="new_status" value="CANCELLED">
+                        <button type="submit" class="btn btn-outline-secondary w-100 btn-sm mt-2">
+                            <i class="bi bi-slash-circle me-1"></i> Cancel Order
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Print Job Queue Buffer Info -->
+            <div class="card kiosk-card p-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-cpu text-secondary me-2"></i>Queue Item Details</h5>
+                {% if job %}
+                <div class="small">
+                    <p class="mb-1"><strong>Queue Item ID:</strong> #{{ job.id }}</p>
+                    <p class="mb-1"><strong>Buffer Status:</strong> <span class="badge bg-secondary">{{ job.get_job_status_display }}</span></p>
+                    <p class="mb-1"><strong>Attempt Count:</strong> {{ job.attempt_count }}</p>
+                    <p class="mb-1"><strong>Enqueued:</strong> {{ job.created_at|date:"M d, H:i" }}</p>
+                    <p class="mb-1"><strong>Last Processed:</strong> {{ job.processed_at|date:"M d, H:i"|default:"Not yet" }}</p>
+                    {% if job.error_message %}
+                    <div class="alert alert-danger small p-2 mt-2 mb-0">
+                        <strong>Error Log:</strong> {{ job.error_message }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <p class="small text-muted mb-0">No print queue buffer item created yet (Awaiting payment authorization).</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

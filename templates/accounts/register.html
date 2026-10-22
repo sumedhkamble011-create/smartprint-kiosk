@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Customer Registration - SmartPrint Kiosk{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card kiosk-card p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="display-6 text-primary mb-2"><i class="bi bi-person-plus-fill"></i></div>
+                    <h3 class="fw-bold">Create Customer Account</h3>
+                    <p class="text-muted small">Register to keep track of all your print orders and download receipts anytime.</p>
+                </div>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger small">
+                        {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Username *</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}<div class="text-danger small">{{ form.username.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Email Address *</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">First Name</label>
+                            {{ form.first_name }}
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Last Name</label>
+                            {{ form.last_name }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">{{ form.phone_number.label }}</label>
+                        {{ form.phone_number }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Password *</label>
+                        {{ form.password }}
+                        {% if form.password.errors %}<div class="text-danger small">{{ form.password.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">Confirm Password *</label>
+                        {{ form.password_confirm }}
+                        {% if form.password_confirm.errors %}<div class="text-danger small">{{ form.password_confirm.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold shadow">
+                            Register Account
+                        </button>
+                    </div>
+
+                    <div class="text-center small text-muted">
+                        Already have an account? <a href="{% url 'accounts:login' %}" class="fw-semibold">Log in here</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

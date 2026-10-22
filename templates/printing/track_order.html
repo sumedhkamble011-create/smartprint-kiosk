@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Track Order Status - SmartPrint Kiosk{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            {% if not order %}
+            <!-- Lookup Search Form (When accessed without specific token) -->
+            <div class="card kiosk-card p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="display-6 text-primary mb-2"><i class="bi bi-search"></i></div>
+                    <h2 class="fw-bold">Track Your Print Order</h2>
+                    <p class="text-muted">Enter the unique Order ID provided on your payment confirmation screen.</p>
+                </div>
+
+                <form method="get" action="{% url 'printing:track_order' %}">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">{{ form.order_number.label }}</label>
+                        {{ form.order_number }}
+                        <div class="form-text text-muted">{{ form.order_number.help_text }}</div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold shadow">
+                            <i class="bi bi-search me-1"></i> Look Up Order Status
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            {% else %}
+            <!-- Live Order Tracking Display -->
+            <div class="card kiosk-card p-4 p-md-5" id="liveTrackingContainer" data-token="{{ order.guest_tracking_token }}">
+
+                <!-- Header -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                    <div>
+                        <span class="text-muted small">Tracking Print Order:</span>
+                        <h3 class="fw-bold mb-0 text-primary font-monospace">{{ order.order_number }}</h3>
+                    </div>
+                    <div class="mt-2 mt-sm-0">
+                        <span id="orderStatusBadge" class="badge fs-5 px-3 py-2 badge-status-{{ order.order_status|lower }}">
+                            {{ order.get_order_status_display }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Ready For Collection Alert Banner (Shown when ready) -->
+                <div id="orderReadyAlert" class="alert alert-success border-success shadow-sm mb-4 {% if order.order_status != 'READY' and order.order_status != 'COMPLETED' %}d-none{% endif %}">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-bell-fill fs-2 text-success me-3"></i>
+                        <div>
+                            <h5 class="alert-heading fw-bold mb-1">Your Prints are Ready for Collection!</h5>
+                            <p class="mb-0 small">Please proceed to <strong>{{ order.shop.name }}</strong> (Counter 1) and present your Order Reference <strong>{{ order.order_number }}</strong> to collect your documents.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visual Progress Steps -->
+                <div class="p-3 bg-light rounded-3 mb-4">
+                    <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-activity me-1"></i> Print Fulfillment Timeline</h6>
+                    <div class="row text-center g-2 small">
+                        <!-- Step 1: Placed -->
+                        <div class="col">
+                            <div class="p-2 rounded bg-success text-white mb-1"><i class="bi bi-check-lg"></i></div>
+                            <span class="fw-bold">Placed</span>
+                        </div>
+                        <!-- Step 2: Paid -->
+                        <div class="col">
+                            <div class="p-2 rounded {% if order.payment_status == 'COMPLETED' %}bg-success text-white{% else %}bg-secondary text-white-50{% endif %} mb-1">
+                                {% if order.payment_status == 'COMPLETED' %}<i class="bi bi-check-lg"></i>{% else %}2{% endif %}
+                            </div>
+                            <span class="fw-bold">Paid</span>
+                        </div>
+                        <!-- Step 3: Queued -->
+                        <div class="col">
+                            <div class="p-2 rounded {% if order.order_status in 'QUEUED,PROCESSING,READY,COMPLETED' %}bg-success text-white{% else %}bg-secondary text-white-50{% endif %} mb-1">
+                                {% if order.order_status in 'QUEUED,PROCESSING,READY,COMPLETED' %}<i class="bi bi-check-lg"></i>{% else %}3{% endif %}
+                            </div>
+                            <span class="fw-bold">Queued</span>
+                        </div>
+                        <!-- Step 4: Printing / Ready -->
+                        <div class="col">
+                            <div class="p-2 rounded {% if order.order_status in 'READY,COMPLETED' %}bg-success text-white{% elif order.order_status == 'PROCESSING' %}bg-primary text-white{% else %}bg-secondary text-white-50{% endif %} mb-1">
+                                {% if order.order_status in 'READY,COMPLETED' %}<i class="bi bi-check-lg"></i>{% elif order.order_status == 'PROCESSING' %}<i class="bi bi-hourglass-split"></i>{% else %}4{% endif %}
+                            </div>
+                            <span class="fw-bold">Ready</span>
+                        </div>
+                        <!-- Step 5: Completed -->
+                        <div class="col">
+                            <div class="p-2 rounded {% if order.order_status == 'COMPLETED' %}bg-success text-white{% else %}bg-secondary text-white-50{% endif %} mb-1">
+                                {% if order.order_status == 'COMPLETED' %}<i class="bi bi-check-lg"></i>{% else %}5{% endif %}
+                            </div>
+                            <span class="fw-bold">Done</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Print Job Worker Buffer Status -->
+                {% if order.print_job %}
+                <div class="alert alert-light border small d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <i class="bi bi-cpu text-primary me-2"></i>
+                        <span id="jobStatusBadge">Print Queue: <strong>{{ order.print_job.get_job_status_display }}</strong></span>
+                    </div>
+                    <span class="badge bg-secondary">Attempt {{ order.print_job.attempt_count }}</span>
+                </div>
+                {% endif %}
+
+                <!-- Order Detail Specifications -->
+                <div class="card border mb-4">
+                    <div class="card-header bg-white py-2">
+                        <h6 class="fw-bold mb-0">Order & Document Specifications</h6>
+                    </div>
+                    <div class="card-body p-3 small">
+                        <div class="row g-2">
+                            <div class="col-sm-4 text-muted">Shop:</div>
+                            <div class="col-sm-8 fw-semibold">{{ order.shop.name }}</div>
+
+                            <div class="col-sm-4 text-muted">Customer Name:</div>
+                            <div class="col-sm-8">{{ order.customer_name }}</div>
+
+                            <div class="col-sm-4 text-muted">Document:</div>
+                            <div class="col-sm-8 fw-semibold text-truncate">{{ order.document.original_filename }}</div>
+
+                            <div class="col-sm-4 text-muted">Preferences:</div>
+                            <div class="col-sm-8">{{ order.get_color_mode_display }}, {{ order.copies }} Copy/Copies, {{ order.get_duplex_mode_display }}</div>
+
+                            <div class="col-sm-4 text-muted">Order Placed At:</div>
+                            <div class="col-sm-8">{{ order.created_at|date:"M d, Y H:i" }}</div>
+
+                            <div class="col-sm-4 text-muted">Total Paid:</div>
+                            <div class="col-sm-8 text-success fw-bold">₹{{ order.total_amount }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Polling Notice -->
+                <div class="text-center text-muted small mb-4">
+                    <span class="spinner-grow spinner-grow-sm text-primary me-1" role="status"></span>
+                    Live real-time status updates active. Page updates automatically as your print job progresses.
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'printing:home' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-house-door me-1"></i> Return Home
+                    </a>
+                    <a href="{% url 'printing:track_order' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-search me-1"></i> Track Another Order
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

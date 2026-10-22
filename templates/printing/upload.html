@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Step 1: Upload Document - SmartPrint Kiosk{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Step Wizard -->
+    <div class="step-wizard">
+        <div class="step-item active">
+            <div class="step-circle">1</div>
+            <div class="step-label">Upload Document</div>
+        </div>
+        <div class="step-item">
+            <div class="step-circle">2</div>
+            <div class="step-label">Print Preferences</div>
+        </div>
+        <div class="step-item">
+            <div class="step-circle">3</div>
+            <div class="step-label">Order Summary</div>
+        </div>
+        <div class="step-item">
+            <div class="step-circle">4</div>
+            <div class="step-label">Demo Payment</div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card kiosk-card p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <span class="badge bg-primary px-3 py-2 rounded-pill fw-semibold mb-2">Step 1 of 4</span>
+                    <h2 class="fw-bold">Upload Your Document</h2>
+                    <p class="text-muted">Select the file you wish to print at <strong>{{ shop.name }}</strong></p>
+                </div>
+
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- File Input Box -->
+                    <div class="mb-4">
+                        <label for="{{ form.document_file.id_for_label }}" class="form-label fw-bold fs-5">
+                            <i class="bi bi-file-earmark-arrow-up text-primary me-2"></i>{{ form.document_file.label }}
+                        </label>
+                        {{ form.document_file }}
+                        {% if form.document_file.errors %}
+                        <div class="text-danger small mt-2">
+                            {% for error in form.document_file.errors %}
+                            <div><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <div class="form-text text-muted mt-2">
+                            <i class="bi bi-info-circle me-1"></i> {{ form.document_file.help_text }}
+                        </div>
+                    </div>
+
+                    <!-- Customer Contact Details -->
+                    <div class="row g-3 mb-4 pt-3 border-top">
+                        <div class="col-12">
+                            <h6 class="fw-bold text-secondary mb-1">
+                                <i class="bi bi-person-badge me-1"></i> Contact Information (For Counter Pickup)
+                            </h6>
+                            <p class="small text-muted mb-3">Optional: Helps kiosk staff call your name when prints are ready.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">{{ form.customer_name.label }}</label>
+                            {{ form.customer_name }}
+                            {% if form.customer_name.errors %}
+                            <div class="text-danger small">{{ form.customer_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">{{ form.customer_phone.label }}</label>
+                            {{ form.customer_phone }}
+                            {% if form.customer_phone.errors %}
+                            <div class="text-danger small">{{ form.customer_phone.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold shadow">
+                            Continue to Print Options <i class="bi bi-arrow-right-circle ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-4 p-3 bg-light rounded-3 small text-muted">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-shield-lock-fill text-success fs-4 me-3"></i>
+                        <div>
+                            <strong>Privacy & Security Protected:</strong> Your documents are stored safely with unguessable identifiers and are accessible only to process your print order.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

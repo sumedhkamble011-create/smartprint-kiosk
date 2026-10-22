@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Confirmed #{{ order.order_number }} - SmartPrint Kiosk{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card kiosk-card p-4 p-md-5 text-center">
+
+                <div class="text-success mb-3">
+                    <i class="bi bi-check-circle-fill display-2"></i>
+                </div>
+
+                <span class="badge bg-success-subtle text-success fs-6 px-3 py-2 rounded-pill fw-semibold mb-2">
+                    Print Order Confirmed & Authorized
+                </span>
+
+                <h1 class="display-6 fw-bold mb-2">Thank You! Your Job is Queued</h1>
+                <p class="text-muted mb-4">
+                    Order Reference: <strong class="text-primary font-monospace fs-4">{{ order.order_number }}</strong>
+                </p>
+
+                <!-- Order Tracking QR Code Frame -->
+                <div class="p-4 bg-light rounded-3 mb-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-5 text-center mb-3 mb-md-0">
+                            {% if order.tracking_qr_code %}
+                            <img src="{{ order.tracking_qr_code.url }}" alt="Order Tracking QR" class="img-fluid rounded border bg-white p-2 shadow-sm" style="max-width: 170px;">
+                            {% else %}
+                            <div class="p-3 bg-white border rounded">
+                                <i class="bi bi-qr-code fs-1 text-success"></i>
+                            </div>
+                            {% endif %}
+                            <div class="small text-muted mt-2">
+                                <i class="bi bi-camera me-1"></i> Scan with phone to track
+                            </div>
+                        </div>
+                        <div class="col-md-7 text-md-start">
+                            <h5 class="fw-bold mb-2">Track Print Progress Live</h5>
+                            <p class="small text-muted mb-3">
+                                You can track the status of your document in real-time. When printing finishes, the status updates to <strong>Ready for Collection</strong>.
+                            </p>
+                            <a href="{% url 'printing:track_order_token' tracking_token=order.guest_tracking_token %}" class="btn btn-primary fw-bold px-4 shadow-sm">
+                                <i class="bi bi-broadcast me-2"></i> Open Live Tracking Screen
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary Breakdown -->
+                <div class="card border text-start mb-4">
+                    <div class="card-header bg-white py-2">
+                        <h6 class="fw-bold mb-0 text-dark">Order Summary Details</h6>
+                    </div>
+                    <div class="card-body p-3 small">
+                        <div class="row g-2">
+                            <div class="col-6 col-sm-4 text-muted">Shop Location:</div>
+                            <div class="col-6 col-sm-8 fw-semibold">{{ order.shop.name }}</div>
+
+                            <div class="col-6 col-sm-4 text-muted">Document:</div>
+                            <div class="col-6 col-sm-8 fw-semibold text-truncate">{{ order.document.original_filename }}</div>
+
+                            <div class="col-6 col-sm-4 text-muted">Options:</div>
+                            <div class="col-6 col-sm-8">{{ order.get_color_mode_display }}, {{ order.copies }} Copy/Copies, {{ order.get_duplex_mode_display }}</div>
+
+                            <div class="col-6 col-sm-4 text-muted">Total Paid:</div>
+                            <div class="col-6 col-sm-8 text-success fw-bold">₹{{ order.total_amount }} (Demo Payment Verified)</div>
+
+                            <div class="col-6 col-sm-4 text-muted">Current Status:</div>
+                            <div class="col-6 col-sm-8">
+                                <span class="badge badge-status-{{ order.order_status|lower }} px-2 py-1">
+                                    {{ order.get_order_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Action Buttons -->
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <a href="{% url 'printing:track_order_token' tracking_token=order.guest_tracking_token %}" class="btn btn-outline-primary px-4">
+                        <i class="bi bi-clock-history me-1"></i> Track Order
+                    </a>
+                    <a href="{% url 'printing:upload' %}" class="btn btn-outline-secondary px-4">
+                        <i class="bi bi-plus-circle me-1"></i> Print Another Document
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

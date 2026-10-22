@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Pricing Rates - SmartPrint Kiosk Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                <div>
+                    <h2 class="fw-bold mb-0">Printing Rate Settings</h2>
+                    <p class="text-muted small mb-0">Configure the per-page rates and volume rules for <strong>{{ shop.name }}</strong></p>
+                </div>
+                <a href="{% url 'dashboard:overview' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i> Dashboard
+                </a>
+            </div>
+
+            <div class="card kiosk-card p-4 p-md-5">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger small">
+                        {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark fs-5">
+                            <i class="bi bi-circle-half text-secondary me-2"></i>{{ form.bw_rate_per_page.label }}
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text fw-bold">₹</span>
+                            {{ form.bw_rate_per_page }}
+                            <span class="input-group-text text-muted">per page</span>
+                        </div>
+                        <div class="form-text text-muted">Standard rate charged for each printed side in black-and-white.</div>
+                        {% if form.bw_rate_per_page.errors %}<div class="text-danger small">{{ form.bw_rate_per_page.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark fs-5">
+                            <i class="bi bi-palette-fill text-danger me-2"></i>{{ form.color_rate_per_page.label }}
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text fw-bold">₹</span>
+                            {{ form.color_rate_per_page }}
+                            <span class="input-group-text text-muted">per page</span>
+                        </div>
+                        <div class="form-text text-muted">Rate charged for full colour laser printing.</div>
+                        {% if form.color_rate_per_page.errors %}<div class="text-danger small">{{ form.color_rate_per_page.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark">
+                            <i class="bi bi-book-half text-primary me-2"></i>{{ form.duplex_discount_per_sheet.label }}
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text fw-bold">₹</span>
+                            {{ form.duplex_discount_per_sheet }}
+                            <span class="input-group-text text-muted">discount / sheet saved</span>
+                        </div>
+                        <div class="form-text text-muted">{{ form.duplex_discount_per_sheet.help_text }} Set to 0.00 for no duplex discount.</div>
+                        {% if form.duplex_discount_per_sheet.errors %}<div class="text-danger small">{{ form.duplex_discount_per_sheet.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark">
+                            <i class="bi bi-layers-half text-secondary me-2"></i>{{ form.max_copies_limit.label }}
+                        </label>
+                        {{ form.max_copies_limit }}
+                        <div class="form-text text-muted">Maximum number of copies a customer is permitted to order in one submission (Prevents paper bin overflow).</div>
+                        {% if form.max_copies_limit.errors %}<div class="text-danger small">{{ form.max_copies_limit.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="d-grid pt-2">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold shadow">
+                            <i class="bi bi-check2-circle me-1"></i> Save Updated Pricing
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

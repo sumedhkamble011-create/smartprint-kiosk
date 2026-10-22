@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Step 3: Order Summary - SmartPrint Kiosk{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Step Wizard -->
+    <div class="step-wizard">
+        <div class="step-item completed">
+            <div class="step-circle"><i class="bi bi-check-lg"></i></div>
+            <div class="step-label">Upload Document</div>
+        </div>
+        <div class="step-item completed">
+            <div class="step-circle"><i class="bi bi-check-lg"></i></div>
+            <div class="step-label">Print Preferences</div>
+        </div>
+        <div class="step-item active">
+            <div class="step-circle">3</div>
+            <div class="step-label">Order Summary</div>
+        </div>
+        <div class="step-item">
+            <div class="step-circle">4</div>
+            <div class="step-label">Demo Payment</div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card kiosk-card p-4 p-md-5">
+                <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+                    <div>
+                        <span class="badge bg-primary px-3 py-2 rounded-pill fw-semibold mb-2">Step 3 of 4</span>
+                        <h2 class="fw-bold mb-0">Review Order & Price Breakdown</h2>
+                    </div>
+                    <div class="text-end">
+                        <span class="text-muted small d-block">Printing at</span>
+                        <strong class="text-primary">{{ shop.name }}</strong>
+                    </div>
+                </div>
+
+                <!-- Document and Options Card -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 h-100">
+                            <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-file-earmark-text me-2"></i>Document Details</h6>
+                            <p class="mb-1"><strong>File Name:</strong> {{ doc.original_filename }}</p>
+                            <p class="mb-1"><strong>Format:</strong> {{ doc.get_file_type_display }}</p>
+                            <p class="mb-1"><strong>File Size:</strong> {{ doc.formatted_file_size }}</p>
+                            <p class="mb-0"><strong>Total Pages:</strong> {{ doc.page_count }} page(s)</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 h-100">
+                            <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-sliders me-2"></i>Selected Print Options</h6>
+                            <p class="mb-1">
+                                <strong>Colour Mode:</strong>
+                                {% if prefs.color_mode == 'COLOR' %}
+                                <span class="badge bg-success">Colour Printing</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Black & White</span>
+                                {% endif %}
+                            </p>
+                            <p class="mb-1"><strong>Copies:</strong> {{ prefs.copies }}</p>
+                            <p class="mb-1"><strong>Page Range:</strong> {% if prefs.page_selection_mode == 'CUSTOM' %}{{ prefs.custom_page_range }}{% else %}All Pages{% endif %}</p>
+                            <p class="mb-0"><strong>Sides / Layout:</strong> {{ prefs.duplex_mode|title }} / {{ prefs.orientation|title }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Financial Price Breakdown Table -->
+                <div class="card border mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-receipt me-2"></i>Cost Calculation Breakdown</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-bordered mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Item Description</th>
+                                        <th class="text-center">Pages / Copy</th>
+                                        <th class="text-center">Copies</th>
+                                        <th class="text-center">Total Sides</th>
+                                        <th class="text-end">Rate / Page</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <strong>{{ price_info.mode_label }}</strong>
+                                            <div class="small text-muted">A4 Paper, {{ prefs.orientation|title }} orientation</div>
+                                        </td>
+                                        <td class="text-center">{{ price_info.pages_per_copy }}</td>
+                                        <td class="text-center">{{ price_info.copies }}</td>
+                                        <td class="text-center">{{ price_info.total_pages_printed }}</td>
+                                        <td class="text-end">₹{{ price_info.rate_per_page }}</td>
+                                        <td class="text-end fw-semibold">₹{{ price_info.subtotal }}</td>
+                                    </tr>
+                                    {% if price_info.discount > 0 %}
+                                    <tr class="table-success">
+                                        <td colspan="5">
+                                            <strong>Duplex Paper Saving Discount</strong>
+                                            <div class="small text-muted">{{ price_info.sheets_saved }} sheet(s) conserved in double-sided printing</div>
+                                        </td>
+                                        <td class="text-end text-success fw-bold">-₹{{ price_info.discount }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    <tr class="table-light fs-5">
+                                        <td colspan="5" class="text-end fw-bold">Total Payable Amount:</td>
+                                        <td class="text-end fw-bold text-success fs-4">₹{{ price_info.total_amount }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Info Notice -->
+                {% if customer_name or customer_phone %}
+                <div class="alert alert-secondary small mb-4">
+                    <i class="bi bi-person-check-fill me-1"></i> Pickup Contact:
+                    {% if customer_name %}<strong>{{ customer_name }}</strong>{% endif %}
+                    {% if customer_phone %} (Phone: {{ customer_phone }}){% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Actions -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <a href="{% url 'printing:preferences' upload_token=doc.upload_token %}" class="btn btn-outline-secondary px-4">
+                        <i class="bi bi-pencil-square me-1"></i> Edit Preferences
+                    </a>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-lg px-5 fw-bold shadow">
+                            Proceed to Demo Payment (₹{{ price_info.total_amount }}) <i class="bi bi-credit-card-2-front ms-2"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

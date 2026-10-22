@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Shop Staff & Operator Login - SmartPrint Kiosk{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card kiosk-card p-4 p-md-5 border-top border-4 border-warning">
+                <div class="text-center mb-4">
+                    <div class="display-6 text-warning mb-2"><i class="bi bi-shield-lock-fill"></i></div>
+                    <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-bold mb-2">Staff Access Portal</span>
+                    <h3 class="fw-bold">Kiosk Operator Login</h3>
+                    <p class="text-muted small">Sign in to manage print queues, verify payments, adjust pricing rates, and update job statuses.</p>
+                </div>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger small">
+                        {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Staff / Admin Username</label>
+                        {{ form.username }}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">Password</label>
+                        {{ form.password }}
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-dark btn-lg fw-bold shadow">
+                            <i class="bi bi-speedometer2 me-2"></i> Enter Shop Dashboard
+                        </button>
+                    </div>
+
+                    <div class="text-center small text-muted">
+                        <a href="{% url 'accounts:login' %}" class="text-secondary">Return to Customer Login</a>
+                    </div>
+                </form>
+
+                <div class="mt-4 p-3 bg-light rounded small text-muted">
+                    <i class="bi bi-info-circle me-1"></i> <strong>First time running?</strong> Create an operator superuser from Windows terminal using:
+                    <code>python manage.py createsuperuser</code>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

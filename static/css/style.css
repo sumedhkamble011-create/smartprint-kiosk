@@ -1,0 +1,260 @@
+/* ==============================================================================
+   SmartPrintKiosk - Master Stylesheet
+   Modern, responsive, professional printing kiosk UI
+   ============================================================================== */
+
+:root {
+    --primary-color: #0d6efd;
+    --primary-hover: #0b5ed7;
+    --secondary-color: #495057;
+    --accent-teal: #0dcaf0;
+    --success-green: #198754;
+    --warning-amber: #ffc107;
+    --danger-red: #dc3545;
+    --bg-light: #f8f9fa;
+    --card-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.06);
+    --card-shadow-hover: 0 1rem 2rem rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    background-color: #f4f6f9;
+    color: #212529;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+/* Navbar */
+.navbar-custom {
+    background: linear-gradient(135deg, #0d6efd 0%, #004085 100%);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.brand-badge {
+    background: rgba(255, 255, 255, 0.2);
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+}
+
+/* Hero Section */
+.hero-banner {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    color: #ffffff;
+    border-radius: 1rem;
+    padding: 3rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--card-shadow);
+}
+
+/* Step Progress Indicator */
+.step-wizard {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+    position: relative;
+}
+
+.step-wizard::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 40px;
+    right: 40px;
+    height: 3px;
+    background-color: #dee2e6;
+    z-index: 1;
+}
+
+.step-item {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    flex: 1;
+}
+
+.step-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    border: 3px solid #dee2e6;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.step-item.active .step-circle {
+    border-color: var(--primary-color);
+    background-color: var(--primary-color);
+    color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.2);
+}
+
+.step-item.completed .step-circle {
+    border-color: var(--success-green);
+    background-color: var(--success-green);
+    color: #ffffff;
+}
+
+.step-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.step-item.active .step-label {
+    color: var(--primary-color);
+}
+
+.step-item.completed .step-label {
+    color: var(--success-green);
+}
+
+/* Cards & Containers */
+.kiosk-card {
+    background: #ffffff;
+    border: none;
+    border-radius: 1rem;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kiosk-card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+/* Status Badges */
+.badge-status-awaiting_payment {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.badge-status-paid {
+    background-color: #cff4fc;
+    color: #055160;
+    border: 1px solid #b6effb;
+}
+
+.badge-status-queued {
+    background-color: #cfe2ff;
+    color: #084298;
+    border: 1px solid #b6d4fe;
+}
+
+.badge-status-processing {
+    background-color: #e2d9f3;
+    color: #491217;
+    border: 1px solid #c9b8ea;
+    animation: pulse 1.8s infinite;
+}
+
+.badge-status-ready {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #badbcc;
+}
+
+.badge-status-completed {
+    background-color: #e2e3e5;
+    color: #41464b;
+    border: 1px solid #d3d6d8;
+}
+
+.badge-status-failed {
+    background-color: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
+}
+
+.badge-status-cancelled {
+    background-color: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.65; }
+    100% { opacity: 1; }
+}
+
+/* Price Box */
+.price-display-box {
+    background: linear-gradient(135deg, #198754 0%, #157347 100%);
+    color: #ffffff;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.price-big {
+    font-size: 2.75rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+/* Demo Payment Banner */
+.demo-banner {
+    background-color: #fff3cd;
+    border: 2px dashed #ffc107;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* QR Code Display Card */
+.qr-display-frame {
+    background: #ffffff;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    border: 3px solid #e9ecef;
+    display: inline-block;
+    box-shadow: var(--card-shadow);
+}
+
+.qr-display-frame img {
+    max-width: 240px;
+    height: auto;
+}
+
+/* Option Buttons & Radios */
+.btn-check:checked + .btn-outline-primary {
+    background-color: #0d6efd;
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+}
+
+.btn-check:checked + .btn-outline-secondary {
+    background-color: #6c757d;
+    color: #ffffff;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .step-wizard::before {
+        display: none;
+    }
+    .step-item {
+        margin-bottom: 0.5rem;
+    }
+    .hero-banner {
+        padding: 2rem 1rem;
+    }
+}

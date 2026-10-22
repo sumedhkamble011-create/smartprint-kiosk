@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Print Orders - SmartPrint Kiosk{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card kiosk-card p-4 p-md-5">
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                    <div>
+                        <h3 class="fw-bold mb-1">My Past Print Orders</h3>
+                        <p class="text-muted small mb-0">List of documents you've submitted through your customer account.</p>
+                    </div>
+                    <a href="{% url 'printing:upload' %}" class="btn btn-primary fw-semibold btn-sm">
+                        <i class="bi bi-plus-circle me-1"></i> New Print Order
+                    </a>
+                </div>
+
+                {% if orders %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Order Ref</th>
+                                <th>Document</th>
+                                <th>Date Placed</th>
+                                <th>Options</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td class="fw-bold font-monospace text-primary">{{ order.order_number }}</td>
+                                <td class="text-truncate" style="max-width: 200px;">
+                                    <i class="bi bi-file-earmark-text text-muted me-1"></i>
+                                    {{ order.document.original_filename }}
+                                </td>
+                                <td class="small text-muted">{{ order.created_at|date:"M d, Y H:i" }}</td>
+                                <td class="small">{{ order.get_color_mode_display }}, {{ order.copies }} copy</td>
+                                <td class="fw-bold text-success">₹{{ order.total_amount }}</td>
+                                <td>
+                                    <span class="badge badge-status-{{ order.order_status|lower }} px-2 py-1">
+                                        {{ order.get_order_status_display }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'printing:track_order_token' tracking_token=order.guest_tracking_token %}" class="btn btn-sm btn-outline-primary">
+                                        Track
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-folder2-open display-4 d-block mb-3 text-secondary"></i>
+                    <h5>No Print Orders Yet</h5>
+                    <p class="small">You haven't placed any print jobs with this account.</p>
+                    <a href="{% url 'printing:upload' %}" class="btn btn-primary mt-2">Print Your First Document</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

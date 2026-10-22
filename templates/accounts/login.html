@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Customer Login - SmartPrint Kiosk{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card kiosk-card p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="display-6 text-primary mb-2"><i class="bi bi-box-arrow-in-right"></i></div>
+                    <h3 class="fw-bold">Customer Login</h3>
+                    <p class="text-muted small">Access your print order history and status</p>
+                </div>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ next }}">
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger small">
+                        {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Username</label>
+                        {{ form.username }}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold">Password</label>
+                        {{ form.password }}
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold shadow">
+                            Sign In
+                        </button>
+                    </div>
+
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>New customer? <a href="{% url 'accounts:register' %}" class="fw-semibold">Register here</a></span>
+                        <a href="{% url 'accounts:staff_login' %}" class="text-secondary">Staff Portal</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

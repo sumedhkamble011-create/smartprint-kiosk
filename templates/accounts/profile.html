@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}User Profile - SmartPrint Kiosk{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card kiosk-card p-4 p-md-5">
+                <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+                    <div class="display-6 text-primary me-3"><i class="bi bi-person-badge"></i></div>
+                    <div>
+                        <h3 class="fw-bold mb-0">{{ user.get_full_name|default:user.username }}</h3>
+                        <span class="badge bg-secondary">{{ profile.get_role_display }}</span>
+                    </div>
+                </div>
+
+                <div class="list-group list-group-flush mb-4">
+                    <div class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Username:</span>
+                        <strong class="font-monospace">{{ user.username }}</strong>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Email Address:</span>
+                        <span>{{ user.email|default:"Not specified" }}</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Contact Phone:</span>
+                        <span>{{ profile.phone_number|default:"Not provided" }}</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Account Registered:</span>
+                        <span>{{ user.date_joined|date:"M d, Y" }}</span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'accounts:order_history' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-clock-history me-1"></i> My Orders
+                    </a>
+                    {% if profile.is_shop_operator %}
+                    <a href="{% url 'dashboard:overview' %}" class="btn btn-warning fw-bold">
+                        <i class="bi bi-speedometer2 me-1"></i> Operator Dashboard
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

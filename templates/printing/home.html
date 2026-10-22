@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}SmartPrint Kiosk - Self-Service Printing{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Banner -->
+    <div class="hero-banner">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold mb-3">
+                    <i class="bi bi-qr-code-scan me-1"></i> Self-Service Smart Printing Kiosk
+                </span>
+                <h1 class="display-5 fw-bold mb-3">Print Documents in Seconds Directly From Your Phone</h1>
+                <p class="lead mb-4 text-white-50">
+                    No waiting in long queues. Scan the QR code, upload your PDF, Word file or image, choose colour or B&W preferences, pay securely with demo checkout, and collect your prints at the counter!
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{% url 'printing:upload' %}" class="btn btn-warning btn-lg px-4 fw-bold shadow">
+                        <i class="bi bi-cloud-arrow-up-fill me-2"></i> Upload Document Now
+                    </a>
+                    <a href="{% url 'printing:track_order' %}" class="btn btn-outline-light btn-lg px-4">
+                        <i class="bi bi-search me-2"></i> Track Print Order
+                    </a>
+                </div>
+            </div>
+
+            <!-- Counter QR Code Card -->
+            <div class="col-lg-4 text-center mt-4 mt-lg-0">
+                <div class="qr-display-frame shadow-lg">
+                    <div class="small fw-bold text-muted mb-2 text-uppercase">
+                        <i class="bi bi-camera me-1"></i> Scan to Open on Mobile
+                    </div>
+                    {% if shop.qr_code_image %}
+                    <img src="{{ shop.qr_code_image.url }}" alt="Shop Kiosk QR Code" class="img-fluid rounded border">
+                    {% else %}
+                    <div class="p-4 bg-light text-muted border rounded">
+                        <i class="bi bi-qr-code fs-1 d-block mb-2 text-primary"></i>
+                        <span>Scan Counter QR Code</span>
+                    </div>
+                    {% endif %}
+                    <div class="mt-2 text-dark fw-bold small">
+                        {{ shop.name }}
+                    </div>
+                    <span class="badge bg-success small mt-1">Ready for Print Requests</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Track Search Bar -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8">
+            <div class="card kiosk-card shadow-sm p-3">
+                <form action="{% url 'printing:track_order' %}" method="get" class="row g-2 align-items-center">
+                    <div class="col-sm-8">
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="bi bi-search text-muted"></i>
+                            </span>
+                            <input type="text" name="order_number" class="form-control border-start-0 text-uppercase" placeholder="Already placed an order? Enter Order ID (e.g. SPK-20261022-XXXX)" required>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <button type="submit" class="btn btn-primary w-100 fw-semibold">
+                            <i class="bi bi-arrow-right-circle me-1"></i> Track Order
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works Section -->
+    <div class="text-center mb-4">
+        <h2 class="fw-bold">How the Smart Kiosk Works</h2>
+        <p class="text-muted">Five easy steps from scan to printed sheet</p>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-4 col-lg-2-4 text-center">
+            <div class="card kiosk-card kiosk-card-hover h-100 p-3">
+                <div class="fs-1 text-primary mb-2"><i class="bi bi-qr-code"></i></div>
+                <h6 class="fw-bold">1. Scan QR</h6>
+                <p class="small text-muted mb-0">Scan the counter QR code with your mobile camera to launch the portal.</p>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2-4 text-center">
+            <div class="card kiosk-card kiosk-card-hover h-100 p-3">
+                <div class="fs-1 text-primary mb-2"><i class="bi bi-file-earmark-arrow-up"></i></div>
+                <h6 class="fw-bold">2. Upload File</h6>
+                <p class="small text-muted mb-0">Upload PDF, Word docx, or images. Page count is detected automatically.</p>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2-4 text-center">
+            <div class="card kiosk-card kiosk-card-hover h-100 p-3">
+                <div class="fs-1 text-primary mb-2"><i class="bi bi-sliders"></i></div>
+                <h6 class="fw-bold">3. Set Options</h6>
+                <p class="small text-muted mb-0">Pick B&W or Colour, number of copies, single or double-sided duplex.</p>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2-4 text-center">
+            <div class="card kiosk-card kiosk-card-hover h-100 p-3">
+                <div class="fs-1 text-primary mb-2"><i class="bi bi-credit-card-2-front"></i></div>
+                <h6 class="fw-bold">4. Demo Pay</h6>
+                <p class="small text-muted mb-0">Safe demo payment simulator verifying your order in real time.</p>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2-4 text-center">
+            <div class="card kiosk-card kiosk-card-hover h-100 p-3">
+                <div class="fs-1 text-success mb-2"><i class="bi bi-printer"></i></div>
+                <h6 class="fw-bold">5. Collect Prints</h6>
+                <p class="small text-muted mb-0">Your print job is queued and printed at the counter ready for pickup.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing & Information Row -->
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card kiosk-card h-100 p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-tag-fill text-warning fs-3 me-2"></i>
+                    <h4 class="fw-bold mb-0">Current Printing Rates</h4>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <strong>Black & White (Monochrome)</strong>
+                                    <div class="small text-muted">Standard high-speed laser printing</div>
+                                </td>
+                                <td class="text-end">
+                                    <span class="fs-4 fw-bold text-primary">₹{{ pricing.bw_rate_per_page }}</span> <span class="text-muted small">/ page</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Colour Printing</strong>
+                                    <div class="small text-muted">High resolution vibrant color printing</div>
+                                </td>
+                                <td class="text-end">
+                                    <span class="fs-4 fw-bold text-success">₹{{ pricing.color_rate_per_page }}</span> <span class="text-muted small">/ page</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Double-Sided (Duplex)</strong>
+                                    <div class="small text-muted">Saves paper and printing volume</div>
+                                </td>
+                                <td class="text-end">
+                                    <span class="badge bg-info text-dark">Supported</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card kiosk-card h-100 p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-file-earmark-check-fill text-primary fs-3 me-2"></i>
+                    <h4 class="fw-bold mb-0">Supported Document Formats</h4>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                            <i class="bi bi-filetype-pdf text-danger fs-5 me-2"></i>
+                            <strong>Portable Document Format (.pdf)</strong>
+                            <div class="small text-muted">Direct page detection and instant printing</div>
+                        </div>
+                        <span class="badge bg-success">Recommended</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                            <i class="bi bi-filetype-docx text-primary fs-5 me-2"></i>
+                            <strong>Microsoft Word (.docx, .doc)</strong>
+                            <div class="small text-muted">Parsed safely and prepared for printing</div>
+                        </div>
+                        <span class="badge bg-primary">Supported</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                            <i class="bi bi-filetype-jpg text-warning fs-5 me-2"></i>
+                            <strong>Images (.jpg, .jpeg, .png)</strong>
+                            <div class="small text-muted">ID proofs, photos, documents, certificates</div>
+                        </div>
+                        <span class="badge bg-secondary">1 Page</span>
+                    </li>
+                </ul>
+                <div class="alert alert-light border small mt-3 mb-0">
+                    <i class="bi bi-shield-check text-success me-1"></i> Maximum file size limit: <strong>{{ max_upload_mb|default:15 }} MB</strong>. Uploaded files are protected and accessible only to your order.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

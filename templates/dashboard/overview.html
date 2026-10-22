@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Shop Owner Dashboard - SmartPrint Kiosk{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5">
+    <!-- Dashboard Header & Sub-Nav -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+            <div class="d-flex align-items-center">
+                <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-bold me-2">Operator Portal</span>
+                <h2 class="fw-bold mb-0">{{ shop.name }} Dashboard</h2>
+            </div>
+            <p class="text-muted small mb-0 mt-1">Real-time print job monitoring, pricing controls, and queue management.</p>
+        </div>
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+            <a href="{% url 'dashboard:qr_management' %}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-qr-code me-1"></i> Counter QR Code
+            </a>
+            <a href="{% url 'dashboard:pricing_settings' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-tag me-1"></i> Manage Rates
+            </a>
+            <a href="{% url 'dashboard:shop_settings' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-gear me-1"></i> Shop Settings
+            </a>
+        </div>
+    </div>
+
+    <!-- Navigation Pills -->
+    <ul class="nav nav-pills mb-4">
+        <li class="nav-item">
+            <a class="nav-link active fw-semibold" href="{% url 'dashboard:overview' %}"><i class="bi bi-speedometer2 me-1"></i> Overview</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark fw-semibold" href="{% url 'dashboard:order_list' %}"><i class="bi bi-list-task me-1"></i> All Orders</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark fw-semibold" href="{% url 'dashboard:pricing_settings' %}"><i class="bi bi-currency-rupee me-1"></i> Pricing Rates</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark fw-semibold" href="{% url 'dashboard:qr_management' %}"><i class="bi bi-qr-code-scan me-1"></i> QR Management</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark fw-semibold" href="{% url 'dashboard:shop_settings' %}"><i class="bi bi-printer me-1"></i> Printer & Hardware</a>
+        </li>
+    </ul>
+
+    <!-- KPI Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-2">
+            <div class="card kiosk-card p-3 border-start border-4 border-primary h-100">
+                <span class="text-muted small text-uppercase fw-semibold">Total Orders</span>
+                <h3 class="fw-bold mb-0 text-dark">{{ total_orders }}</h3>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card kiosk-card p-3 border-start border-4 border-success h-100">
+                <span class="text-muted small text-uppercase fw-semibold">Total Revenue Verified</span>
+                <h3 class="fw-bold mb-0 text-success">₹{{ total_revenue }}</h3>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-2">
+            <div class="card kiosk-card p-3 border-start border-4 border-info h-100">
+                <span class="text-muted small text-uppercase fw-semibold">In Print Queue</span>
+                <h3 class="fw-bold mb-0 text-info">{{ in_queue_count }}</h3>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-2">
+            <div class="card kiosk-card p-3 border-start border-4 border-warning h-100">
+                <span class="text-muted small text-uppercase fw-semibold">Ready for Pickup</span>
+                <h3 class="fw-bold mb-0 text-warning">{{ ready_count }}</h3>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="card kiosk-card p-3 border-start border-4 border-secondary h-100">
+                <span class="text-muted small text-uppercase fw-semibold">Completed Orders</span>
+                <h3 class="fw-bold mb-0 text-secondary">{{ completed_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Active Print Queue Spool Table -->
+        <div class="col-xl-7">
+            <div class="card kiosk-card h-100">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-cpu-fill text-primary me-2"></i>Active Print Queue</h5>
+                    <span class="badge bg-primary rounded-pill">{{ active_jobs|length }} Jobs</span>
+                </div>
+                <div class="card-body p-0">
+                    {% if active_jobs %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light small">
+                                <tr>
+                                    <th>Order</th>
+                                    <th>Document</th>
+                                    <th>Options</th>
+                                    <th>Job Status</th>
+                                    <th class="text-end">Quick Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in active_jobs %}
+                                <tr>
+                                    <td class="fw-bold font-monospace">
+                                        <a href="{% url 'dashboard:order_detail' order_number=job.order.order_number %}" class="text-decoration-none">
+                                            {{ job.order.order_number }}
+                                        </a>
+                                    </td>
+                                    <td class="small text-truncate" style="max-width: 170px;">
+                                        {{ job.order.document.original_filename }}
+                                    </td>
+                                    <td class="small">
+                                        {{ job.order.get_color_mode_display }}, {{ job.order.copies }} copy
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark">{{ job.get_job_status_display }}</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <form method="post" action="{% url 'dashboard:update_status' order_number=job.order.order_number %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="new_status" value="READY">
+                                            <button type="submit" class="btn btn-sm btn-success fw-semibold" title="Mark Ready for Collection">
+                                                <i class="bi bi-check2-circle"></i> Mark Ready
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-check2-all display-4 text-success d-block mb-2"></i>
+                        <h6>Print queue is clear</h6>
+                        <p class="small">No jobs currently spooling or awaiting execution.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Worker & Hardware Status Card -->
+        <div class="col-xl-5">
+            <div class="card kiosk-card h-100 p-4">
+                <h5 class="fw-bold mb-3"><i class="bi bi-motherboard text-secondary me-2"></i>Kiosk Execution Engine</h5>
+
+                <div class="p-3 bg-light rounded-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted small">Current Print Engine Mode:</span>
+                        {% if print_mode == 'worker' %}
+                        <span class="badge bg-danger">PHYSICAL WINDOWS WORKER</span>
+                        {% else %}
+                        <span class="badge bg-success">SIMULATION MODE (SAFE)</span>
+                        {% endif %}
+                    </div>
+                    <div class="small text-muted">
+                        {% if print_mode == 'worker' %}
+                        Physical printing is armed. The local Windows print worker sends jobs to <code>{{ shop.configured_printer_name|default:"(No printer set)" }}</code>.
+                        {% else %}
+                        Jobs are processed virtually inside the dashboard buffer without consuming ink or paper. Perfect for demonstration.
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="alert alert-info small mb-0">
+                    <i class="bi bi-info-circle me-1"></i> To start the Windows print worker background polling loop:
+                    <div class="mt-2 font-monospace bg-white p-2 rounded border">
+                        python manage.py run_print_worker
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders Table -->
+    <div class="card kiosk-card">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Recent 8 Orders</h5>
+            <a href="{% url 'dashboard:order_list' %}" class="btn btn-outline-primary btn-sm">View All Orders</a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small">
+                        <tr>
+                            <th>Order Number</th>
+                            <th>Customer</th>
+                            <th>Document</th>
+                            <th>Time</th>
+                            <th>Amount</th>
+                            <th>Payment</th>
+                            <th>Order Status</th>
+                            <th class="text-end">Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                        <tr>
+                            <td class="fw-bold font-monospace">
+                                <a href="{% url 'dashboard:order_detail' order_number=order.order_number %}" class="text-decoration-none">
+                                    {{ order.order_number }}
+                                </a>
+                            </td>
+                            <td>{{ order.customer_name }}</td>
+                            <td class="text-truncate" style="max-width: 180px;">{{ order.document.original_filename }}</td>
+                            <td class="small text-muted">{{ order.created_at|date:"H:i, d M" }}</td>
+                            <td class="fw-bold text-success">₹{{ order.total_amount }}</td>
+                            <td>
+                                {% if order.payment_status == 'COMPLETED' %}
+                                <span class="badge bg-success">Paid</span>
+                                {% elif order.payment_status == 'FAILED' %}
+                                <span class="badge bg-danger">Failed</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge badge-status-{{ order.order_status|lower }} px-2 py-1">
+                                    {{ order.get_order_status_display }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'dashboard:order_detail' order_number=order.order_number %}" class="btn btn-sm btn-outline-secondary">
+                                    Inspect
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">No orders recorded yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
